@@ -19,7 +19,7 @@ jobs:
           sudo apt-get install -y awscli
       - name: Build Cloudformation template
         run: |
-          aws cloudformation package --template-file template.yml --output-template-file packaged.yml
+          aws cloudformation package --template-file template.yml  --s3-bucket --sre-university --output-template-file packaged.yml
 
   test:
     runs-on: ubuntu-latest
