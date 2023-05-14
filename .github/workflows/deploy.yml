@@ -68,7 +68,6 @@ jobs:
       - name: Deploy CloudFormation template
         run: |
           aws cloudformation deploy --template-file packaged.yml --stack-name sre-university --s3-bucket sreuniversity
-
   # deploy-if-secure:
     # runs-on: ubuntu-latest
     # needs: security-scan
