@@ -61,17 +61,11 @@ jobs:
     needs: [build, test]
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
+      - name: Install dependencies and Set up AWS credentials
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
-      - name: Set up AWS credentials and Deploy
-        run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
           echo "AWS_DEFAULT_REGION=us-east-1" >> ~/.aws/credentials
           aws cloudformation deploy --template-file packaged.yml --stack-name sre-university --s3-bucket sreuniversity
-
-      # - name: Deploy CloudFormation template
-      #   run: |
-      #     aws cloudformation deploy --template-file packaged.yml --stack-name sre-university --s3-bucket sreuniversity
