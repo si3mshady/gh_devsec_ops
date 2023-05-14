@@ -1,0 +1,78 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Build Cloudformation template
+        run: |
+          aws cloudformation package --template-file template.yml --output-template-file template.yml
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Test Cloudformation template
+        run: |
+          aws cloudformation validate-template --template-file template.yml
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - test
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Deploy Cloudformation template
+        run: |
+          aws cloudformation deploy --template-file template.yml --stack-name sre-university --s3-bucket sreuniversity
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+          sudo apt-get install -y codeguru-reviewer
+      - name: Run security scan
+        run: |
+          codeguru-reviewer scan --source-bucket sreuniversity --source-prefix template.yml
+
+  deploy-if-secure:
+    runs-on: ubuntu-latest
+    needs:
+      - security-scan
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Deploy Cloudformation template if secure
+        run: |
+          if [[ $(codeguru-reviewer get-findings --source-bucket sreuniversity --source-prefix template.yml | jq -r '.findings | length') -eq 0 ]]; then
+            aws cloudformation deploy --template-file template.yml --stack-name sre-university --s3-bucket sreuniversity
+          fi

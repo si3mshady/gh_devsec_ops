@@ -1,0 +1,13 @@
+please create a cloudformation template and use cfn-init to install
+docker, git. Please use the ami  "ami-0c36b3f873d6311d1". Port 3000 should be open to public and 22 should be accessible
+from my ip address only. The instance type is t2.medium.  The instance name is SRE_UNIVERSITY.
+Use docker to run docker si3mshady/awsthree:4 host port 888 container port 3000 
+
+
+#create a github_actions devsecops pipeline that will build,test and deploy the cloudformation template if security scans
+do not detect issues. The cloudformation template name is template.yml. Please use sreuniversity as the s3 bucket
+
+
+
+
+

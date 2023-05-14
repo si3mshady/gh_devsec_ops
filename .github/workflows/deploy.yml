@@ -1,0 +1,6 @@
+
+
+#create a github_actions devsecops pipeline that will build,test and deploy the cloudformation template if security scans
+do not detect issues. The cloudformation template name is template.yml. Please use sreuniversity as the s3 bucket
+
+
