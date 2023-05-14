@@ -78,4 +78,4 @@ jobs:
           name: tekloon-test-stack
           template: template.yml
           no-fail-on-empty-changeset: "1"
-          # parameter-overrides: "EC2InstanceType=t2.micro"
+     
