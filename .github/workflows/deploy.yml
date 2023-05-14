@@ -61,15 +61,11 @@ jobs:
     needs: [build, test]
     steps:
       - uses: actions/checkout@v2
-      - name: deploy
-        with:
-          aws-region: us-east-2
-          role-to-assume: arn:aws:iam::201565661725:role/CloudF
-          role-session-name: MySessionName
+      - name: Deploy
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
           echo "AWS_DEFAULT_REGION=us-east-1" >> ~/.aws/credentials
-          aws cloudformation deploy --template-file template.yml --stack-name sre-university 
+          aws cloudformation deploy --template-file template.yml --stack-name sre-university
