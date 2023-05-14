@@ -9,6 +9,11 @@ on:
       - main
 
 jobs:
+  - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
+            aws-region: ${{ secrets.AWS_REGION }}
   build:
     runs-on: ubuntu-latest
     steps:
