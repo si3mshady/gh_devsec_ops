@@ -20,8 +20,9 @@ jobs:
       - name: Build CloudFormation template
         run: |
         
-          export AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+          export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
           aws cloudformation package --template-file template.yml --s3-bucket sre-university --output-template-file packaged.yml
 
   test:
@@ -52,9 +53,10 @@ jobs:
         run: |
           if grep -q "your_regex_pattern" template.yml; then
             echo "Regex pattern found in template.yml. Proceeding with deployment."
+             exit 1
           else
             echo "Regex pattern not found in template.yml. Stopping deployment."
-            exit 1
+           
           fi
 
   deploy:
