@@ -47,7 +47,6 @@ jobs:
           sudo apt-get install -y awscli
           sudo apt-get install -y trivy
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/master/install.sh | sh -s -- -y
-
       - name: Run security scan
         run: |
           trivy image --format=json --severity=CRITICAL,HIGH,MEDIUM localhost:5000/sreuniversity/template.yml
