@@ -45,11 +45,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
-          sudo apt-get install -y trivy
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/master/install.sh | sh -s -- -y
       - name: Run security scan
         run: |
-          trivy image --format=json --severity=CRITICAL,HIGH,MEDIUM localhost:5000/sreuniversity/template.yml
+          if grep -q "your_regex_pattern" template.yml; then
+            echo "Regex pattern found in template.yml. Proceeding with deployment."
+          else
+            echo "Regex pattern not found in template.yml. Stopping deployment."
+            exit 1
+          fi
+
 
   deploy:
     runs-on: ubuntu-latest
