@@ -76,6 +76,6 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: grogu
-          template: template.yml
+          template: ./template.yml
           no-fail-on-empty-changeset: "1"
           # parameter-overrides: "EC2InstanceType=t2.micro"
