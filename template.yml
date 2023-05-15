@@ -1,19 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-# Parameters:
-#   YourIP:
-#     Type: String
-#     Description: IP address allowed for SSH access
-#     default: 10.10
-
 Resources:
-  # Create an S3 bucket named sreuniversity
-  # S3Bucket:
-  #   Type: AWS::S3::Bucket
-  #   Properties:
-  #     BucketName: sreuniversity-gr
-
-  # Create an EC2 instance
+  
   SREUNIVERSITY:
     Type: AWS::EC2::Instance
     Properties:
