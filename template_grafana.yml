@@ -58,7 +58,6 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow access to Prometheus and Grafana
-      # VpcId: vpc-1234567890abcdef
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -67,4 +66,12 @@ Resources:
         - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
           CidrIp: 0.0.0.0/0
