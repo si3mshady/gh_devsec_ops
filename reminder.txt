@@ -1,0 +1,8 @@
+default user & pw for Grafana
+
+admin,admin
+
+
+
+Prometheus uses port 9090
+Grafana uses port 3000
