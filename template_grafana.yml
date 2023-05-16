@@ -7,7 +7,7 @@ Resources:
       InstanceType: t2.micro
       KeyName: turnthepage
       SecurityGroups:
-        - !Ref SecurityGroup
+        - !Ref SecurityGroupGrafanaProm
       Tags:
         - Key: Name
           Value: Prometheus and Grafana
@@ -51,7 +51,7 @@ Resources:
               enabled: true
               command:
                 - /usr/sbin/grafana-server
-    SecurityGroup:
+    SecurityGroupGrafanaProm:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Allow access to Prometheus and Grafana
