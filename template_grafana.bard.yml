@@ -11,26 +11,26 @@ Resources:
       Tags:
         - Key: Name
           Value: Prometheus and Grafana
-    UserData:
-      Fn::Base64: |
-        #!/bin/bash
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
 
-        # Install wget
-        sudo yum install wget -y
+          # Install wget
+          sudo yum install wget -y
 
-        # Download prom_install and grafana_install
-        wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
-        wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+          # Download prom_install and grafana_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
 
-        # Make prom_install and grafana_install executable
-        chmod +x prom_install.sh
-        chmod +x grafana_install.sh
+          # Make prom_install and grafana_install executable
+          chmod +x prom_install.sh
+          chmod +x grafana_install.sh
 
-        # Run prom_install
-        ./prom_install.sh
+          # Run prom_install
+          ./prom_install.sh
 
-        # Run grafana_install
-        ./grafana_install.sh
+          # Run grafana_install
+          ./grafana_install.sh
 
   SecurityGroupGrafanaProm:
     Type: AWS::EC2::SecurityGroup
