@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0c36b3f873d6311d1
+      InstanceType: t2.large
+      KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupGrafanaProm
+      Tags:
+        - Key: Name
+          Value: Prometheus and Grafana
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - configure-prometheus
+            - configure-grafana
+        configure-prometheus:
+          files:
+            /etc/prometheus/prometheus.yml:
+              content: |
+                global:
+                  scrape_interval: 15s
+                scrape_configs:
+                  - job_name: prometheus
+                    scrape_interval: 15s
+                    metrics_path: /metrics
+                    params:
+                      target: http://localhost:9090
+        configure-grafana:
+          packages:
+            yum:
+              grafana: []
+          files:
+            /etc/grafana/grafana.ini:
+              content: |
+                [server]
+                protocol = http
+                http_port = 3000
+                [database]
+                type = influxdb
+                database = prometheus
+                host = localhost
+                port = 8086
+                user = grafana
+                password = grafana
+          services:
+            sysvinit:
+              grafana:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/grafana/grafana.ini
+
+  SecurityGroupGrafanaProm:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to Prometheus and Grafana
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+
+  UserData:
+    Fn::Base64: |
+      #!/bin/bash
+
+      # Install wget
+      sudo yum install wget -y
+
+      # Download prom_install and grafana_install
+      wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+      wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+
+      # Make prom_install and grafana_install executable
+      chmod +x prom_install.sh
+      chmod +x grafana_install.sh
+
+      # Run prom_install
+      bash prom_install.sh
+
+      # Run grafana_install
+      bash grafana_install.sh

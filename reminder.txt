@@ -6,3 +6,8 @@ admin,admin
 
 Prometheus uses port 9090
 Grafana uses port 3000
+
+https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+
+
+https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh

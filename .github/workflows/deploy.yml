@@ -81,5 +81,5 @@ jobs:
           export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
           export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           export AWS_DEFAULT_REGION=us-east-1
-          aws cloudformation deploy --template-file template_grafana.yml --stack-name sreuniversitygrafana2
+          aws cloudformation deploy --template-file template_grafana.bard.yml --stack-name sreuniversitybard
      
