@@ -5,7 +5,7 @@ Resources:
     Properties:
       ImageId: ami-0c36b3f873d6311d1
       InstanceType: t2.micro
-      KeyName: turnthepages
+      KeyName: turnthepage
       SecurityGroups:
         - !Ref SecurityGroup
       Tags:
