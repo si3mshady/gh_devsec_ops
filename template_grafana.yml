@@ -6,7 +6,7 @@ Resources:
       ImageId: ami-0c36b3f873d6311d1
       InstanceType: t2.micro
       KeyName: turnthepage
-      SecurityGroups:
+      SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
       Tags:
         - Key: Name
@@ -32,7 +32,7 @@ Resources:
         configure-grafana:
           packages:
             yum:
-              - grafana
+              grafana: []
           files:
             /etc/grafana/grafana.ini:
               content: |
@@ -47,21 +47,24 @@ Resources:
                 user = grafana
                 password = grafana
           services:
-            grafana:
-              enabled: true
-              command:
-                - /usr/sbin/grafana-server
-    SecurityGroupGrafanaProm:
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: Allow access to Prometheus and Grafana
-        # VpcId: vpc-1234567890abcdef
-        IpPermissions:
-          - IpProtocol: tcp
-            FromPort: 80
-            ToPort: 80
-            CidrIp: 0.0.0.0/0
-          - IpProtocol: tcp
-            FromPort: 3000
-            ToPort: 3000
-            CidrIp: 0.0.0.0/0
+            sysvinit:
+              grafana:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/grafana/grafana.ini
+
+  SecurityGroupGrafanaProm:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to Prometheus and Grafana
+      # VpcId: vpc-1234567890abcdef
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
