@@ -4,7 +4,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-0c36b3f873d6311d1
-      InstanceType: t2.micro
+      InstanceType: t2.large
       KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
