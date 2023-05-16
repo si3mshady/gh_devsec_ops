@@ -35,7 +35,7 @@ Resources:
   SecurityGroupGrafanaProm:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow access to Prometheus and Grafana
+      GroupDescription: Allow access to Prometheus and Grafana.
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80

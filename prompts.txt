@@ -11,7 +11,13 @@ Find an alternative to code guru, use Trivy instead.
 The cloudformation template name is template.yml. Please use sreuniversity as the s3 bucket
 
 
+-------
 
+provide boiler plate code for the following
+Please create an EC2 instance and a security group.
+ The instance uses AMI: ami-0c36b3f873d6311d1, is of type t2.large, and has Prometheus and Grafana installed
+  The security group permits access to these tools on ports 80, 3000, 22, and 9090. 
+  Prometheus collects metrics while Grafana visualizes them, enabling efficient application health and performance monitoring.
 
 
       
