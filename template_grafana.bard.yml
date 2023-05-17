@@ -3,6 +3,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   Environment:
     Type: String
+    
+Conditions:
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+
 
 Resources:
   EC2Instance:
@@ -65,4 +69,4 @@ Resources:
           ToPort: 9090
           CidrIp: 0.0.0.0/0
 
-          
+
