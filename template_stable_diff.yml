@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A CloudFormation template to deploy the Stable Diffusion Web UI by Automatic1111 and Prometheus/Grafana
+
+Parameters:
+  Environment:
+    Type: String
+
+Conditions:
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: sd-webui-sg
+      GroupDescription: Security group for Stable Diffusion and Prometheus/Grafana EC2 instances
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 7860
+          ToPort: 7860
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: g4dn.xlarge
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-0574da719dca65348   # AMI ID for 'prod' environment
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 300
+            VolumeType: gp2
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['StableDiffusion-Prometheus-Grafana', !Ref Environment]]
+      SecurityGroups:
+        - Ref: SecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          cd /home/ubuntu
+
+          # Clone and setup stable-diffusion-webui
+          git clone https://github.com/marshmellow77/stable-diffusion-webui.git
+          cd stable-diffusion-webui
+          git checkout dev
+          cd ..
+          bash stable-diffusion-webui/setup.sh -y
+
+          # Install wget
+          sudo yum install wget -y
+
+          # Download prom_install and grafana_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+
+          # Make prom_install and grafana_install executable
+          chmod +x prom_install.sh
+          chmod +x grafana_install.sh
+
+          # Run prom_install
+          ./prom_install.sh
+
+          # Run grafana_install
+          ./grafana_install.sh
+
+  MyEIP:
+    Type: AWS::EC2::EIP
+
+  MyEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt MyEIP.AllocationId
+      InstanceId: !Ref EC2Instance
