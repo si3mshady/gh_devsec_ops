@@ -44,6 +44,10 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-0574da719dca65348   # AMI ID for 'prod' environment
+      KeyName: !If
+        - IsDevEnvironment
+        - sreuniversity  # Key name for 'dev' environment
+        - turnthepage   # Key name for 'prod' environment
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -92,3 +96,4 @@ Resources:
       AllocationId: !GetAtt MyEIP.AllocationId
       InstanceId: !Ref EC2Instance
 
+         
