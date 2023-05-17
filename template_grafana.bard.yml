@@ -8,7 +8,10 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0c36b3f873d6311d1
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
       InstanceType: t2.large
       KeyName: turnthepage
       SecurityGroupIds:
@@ -61,4 +64,3 @@ Resources:
           FromPort: 9090
           ToPort: 9090
           CidrIp: 0.0.0.0/0
-
