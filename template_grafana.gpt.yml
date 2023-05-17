@@ -3,7 +3,7 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0c36b3f873d6311d1
+      ImageId: ami-0a695f0d95cefc163
       InstanceType: t2.large
       KeyName: turnthepage
       SecurityGroupIds:
