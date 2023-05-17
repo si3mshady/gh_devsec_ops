@@ -91,3 +91,4 @@ Resources:
     Properties:
       AllocationId: !GetAtt MyEIP.AllocationId
       InstanceId: !Ref EC2Instance
+
