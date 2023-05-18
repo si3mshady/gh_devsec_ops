@@ -50,7 +50,7 @@ Resources:
         - t2.large
       ImageId: !If
         - IsDevEnvironment
-        - ami-048e1e086c4bc98a6 # AMI ID for 'dev' environment TYPO3 CMS v11.5.26a on Debian GNU/Linux v11.6 (Bullseye)
+        - ami-0fec2c2e2017f4e7b # AMI ID for 'dev' environment TYPO3 CMS v11.5.26a on Debian GNU/Linux v11.6 (Bullseye)
         - ami-0a695f0d95cefc163   # AMI ID for 'prod' environment
       KeyName: !If
         - IsDevEnvironment
