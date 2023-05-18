@@ -50,8 +50,8 @@ Resources:
         - t2.large
       ImageId: !If
         - IsDevEnvironment
-        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-        - ami-0574da719dca65348   # AMI ID for 'prod' environment
+        - ami-0574da719dca65348 # AMI ID for 'dev' environment 
+        - ami-0a695f0d95cefc163   # AMI ID for 'prod' environment
       KeyName: !If
         - IsDevEnvironment
         - sreuniversity  # Key name for 'dev' environment
