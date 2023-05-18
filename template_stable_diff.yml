@@ -61,6 +61,7 @@ Resources:
           Ebs:
             VolumeSize: 300
             VolumeType: gp2
+            
       Tags:
         - Key: Name
           Value: !Join ['-', ['StableDiffusion-Prometheus-Grafana', !Ref Environment]]
