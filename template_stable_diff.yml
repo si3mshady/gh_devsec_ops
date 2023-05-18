@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Description: A CloudFormation template to deploy the Stable Diffusion Web UI by Automatic1111 and Prometheus/Grafana
 
 Parameters:
@@ -9,6 +9,15 @@ Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
 Resources:
+  MyEIP:
+    Type: AWS::EC2::EIP
+
+  MyEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt MyEIP.AllocationId
+      InstanceId: !Ref EC2Instance
+      
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -24,10 +33,6 @@ Resources:
           ToPort: 7860
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
           CidrIp: 0.0.0.0/0
@@ -39,7 +44,10 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: g4dn.xlarge
+      InstanceType: !If
+        - IsDevEnvironment
+        - g4dn.xlarge
+        - t2.large
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
@@ -65,10 +73,13 @@ Resources:
 
           # Clone and setup stable-diffusion-webui
           git clone https://github.com/marshmellow77/stable-diffusion-webui.git
-          cd stable-diffusion-webui
-          git checkout dev
-          cd ..
           bash stable-diffusion-webui/setup.sh -y
+          # git checkout dev
+
+          # cd ..
+          # bash stable-diffusion-webui/setup.sh -y
+
+          sleep 8
 
           # Install wget
           sudo yum install wget -y
@@ -86,14 +97,4 @@ Resources:
 
           # Run grafana_install
           ./grafana_install.sh
-
-  MyEIP:
-    Type: AWS::EC2::EIP
-
-  MyEIPAssociation:
-    Type: AWS::EC2::EIPAssociation
-    Properties:
-      AllocationId: !GetAtt MyEIP.AllocationId
-      InstanceId: !Ref EC2Instance
-
-         
+  
