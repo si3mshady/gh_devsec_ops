@@ -79,6 +79,7 @@ Resources:
           cd stable-diffusion-webui
           pip3 install -r requirements.txt
           sudo apt install -y nvidia-cuda-toolkit
+          
 
           sleep 8
 
