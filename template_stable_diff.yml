@@ -61,7 +61,7 @@ Resources:
           Ebs:
             VolumeSize: 300
             VolumeType: gp2
-            
+
       Tags:
         - Key: Name
           Value: !Join ['-', ['StableDiffusion-Prometheus-Grafana', !Ref Environment]]
@@ -70,14 +70,14 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          cd /home/ubuntu
-          # Clone and setup stable-diffusion-webui
-          git clone https://github.com/marshmellow77/stable-diffusion-webui.git
-          bash stable-diffusion-webui/setup.sh -y
-          # git checkout dev
-
-          # cd ..
-          # bash stable-diffusion-webui/setup.sh -y
+          
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install -y build-essential python3 python3-pip git
+          git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
+          cd stable-diffusion-webui
+          pip3 install -r requirements.txt
+          sudo apt install -y nvidia-cuda-toolkit
 
           sleep 8
 
