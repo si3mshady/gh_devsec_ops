@@ -9,34 +9,34 @@ Conditions:
 
 
 SecurityGroupGrafanaProm:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow access to Prometheus and Grafana.
-      Tags:
-        - Key: Name
-          Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
-      SecurityGroupIngress:
-      
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 9090
-          ToPort: 9090
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 5000
-          ToPort: 5000
-          CidrIp: !Ref SecurityGroupELK
-        - IpProtocol: tcp
-          FromPort: 9200
-          ToPort: 9200
-          CidrIp: !Ref SecurityGroupELK
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+    GroupDescription: Allow access to Prometheus and Grafana.
+    Tags:
+      - Key: Name
+        Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
+    SecurityGroupIngress:
+    
+      - IpProtocol: tcp
+        FromPort: 3000
+        ToPort: 3000
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 9090
+        ToPort: 9090
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 5000
+        ToPort: 5000
+        CidrIp: !Ref SecurityGroupELK
+      - IpProtocol: tcp
+        FromPort: 9200
+        ToPort: 9200
+        CidrIp: !Ref SecurityGroupELK
 
           
 
@@ -84,87 +84,87 @@ Resources:
           # Configure Prometheus to forward logs to ELK
           echo "elk_host: ${ElasticIpELK.PublicDnsName}" >> /etc/prometheus/prometheus.yml
 
-EC2InstanceELK:
-  Type: AWS::EC2::Instance
-  Properties:
-    ImageId: !If
-      - IsDevEnvironment
-      - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-      - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-    InstanceType: t2.large
-    # KeyName: turnthepage
-    SecurityGroupIds:
-      - !Ref SecurityGroupELK
-    Tags:
-      - Key: Name
-        Value: !Join ['-', ['ELK-', !Ref Environment]]
-    UserData:
-      Fn::Base64: !Sub |
-        #!/bin/bash
+  EC2InstanceELK:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+      InstanceType: t2.large
+      # KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupELK
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['ELK-', !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
 
-        # Install wget
-        sudo yum install wget -y
+          # Install wget
+          sudo yum install wget -y
 
-        # Download elk_install
-        wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/elk_install.sh
+          # Download elk_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/elk_install.sh
 
-        # Make elk_install executable
-        chmod +x elk_install.sh
+          # Make elk_install executable
+          chmod +x elk_install.sh
 
-        # Run elk_install
-        ./elk_install.sh
+          # Run elk_install
+          ./elk_install.sh
 
-        # Configure ELK to listen on port 5000 for TCP connections from Prometheus
-        echo "network.host: 0.0.0.0" >> /etc/elasticsearch/elasticsearch.yml
+          # Configure ELK to listen on port 5000 for TCP connections from Prometheus
+          echo "network.host: 0.0.0.0" >> /etc/elasticsearch/elasticsearch.yml
 
-        # Configure Logstash to listen on port 5000 for TCP connections from Prometheus
-        echo "input {
-          tcp {
-            port => 5000
-          }
-        }
-
-        filter {
-          grok {
-            match => {
-              "message" => "%{COMMONAPACHELOG}"
+          # Configure Logstash to listen on port 5000 for TCP connections from Prometheus
+          echo "input {
+            tcp {
+              port => 5000
             }
           }
-        }
 
-        output {
-          elasticsearch {
-            hosts => ["localhost:9200"]
+          filter {
+            grok {
+              match => {
+                "message" => "%{COMMONAPACHELOG}"
+              }
+            }
           }
-        }
-        " >> /etc/logstash/logstash.conf
 
-        # Configure Kibana to listen on port 5601
-        echo "elasticsearch.hosts: ["localhost:9200"]" >> /etc/kibana/kibana.yml
+          output {
+            elasticsearch {
+              hosts => ["localhost:9200"]
+            }
+          }
+          " >> /etc/logstash/logstash.conf
 
-        # Start Kibana
-        sudo service kibana start
+          # Configure Kibana to listen on port 5601
+          echo "elasticsearch.hosts: ["localhost:9200"]" >> /etc/kibana/kibana.yml
 
-        # Configure Elastic IP for ELK instance
-        echo "ElasticIp: {ElasticIp.PublicDnsName}" >> /etc/elk/elk.conf
-        # Start Elasticsearch
-        sudo service elasticsearch start
-        # Start Logstash
-        sudo service logstash start
-        # Start Kibana
-        sudo service kibana start
-        # Wait for ELK stack to be up and running
-        sleep 60
-        # Check if ELK stack is up and running
-        curl -XGET http://{ElasticIp.PublicDnsName}:9200
+          # Start Kibana
+          sudo service kibana start
 
-        if [[ $? -eq 0 ]]; then
-          echo "ELK stack is up and running"
-        else
-          echo "ELK stack is not up and running"
-        fi
-Outputs:
-  PublicDnsName:
-    Value: !GetAtt EC2InstanceELK.PublicDnsName
+          # Configure Elastic IP for ELK instance
+          echo "ElasticIp: {ElasticIp.PublicDnsName}" >> /etc/elk/elk.conf
+          # Start Elasticsearch
+          sudo service elasticsearch start
+          # Start Logstash
+          sudo service logstash start
+          # Start Kibana
+          sudo service kibana start
+          # Wait for ELK stack to be up and running
+          sleep 60
+          # Check if ELK stack is up and running
+          curl -XGET http://{ElasticIp.PublicDnsName}:9200
+
+          if [[ $? -eq 0 ]]; then
+            echo "ELK stack is up and running"
+          else
+            echo "ELK stack is not up and running"
+          fi
+  Outputs:
+    PublicDnsName:
+      Value: !GetAtt EC2InstanceELK.PublicDnsName
 
 
