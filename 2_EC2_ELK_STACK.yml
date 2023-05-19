@@ -5,7 +5,7 @@ Parameters:
     Type: String
 
   StackName:
-  Type: String
+    Type: String
 
 Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
