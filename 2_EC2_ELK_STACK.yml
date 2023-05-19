@@ -105,29 +105,71 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          # Update the system
-          sudo apt update
+          # Get the EC2 instance's public IP address
+          INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
-          # Install Java
-          sudo apt install default-jre -y
+          # Install Java Development Kit (JDK)
+          sudo apt-get update
+          sudo apt-get install default-jdk -y
 
           # Install Elasticsearch
+          sudo apt-get install apt-transport-https -y
           wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
           echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
-          sudo apt update
-          sudo apt install elasticsearch -y
+          sudo apt-get update
+          sudo apt-get install elasticsearch -y
           sudo systemctl enable elasticsearch
           sudo systemctl start elasticsearch
 
           # Install Logstash
-          sudo apt install logstash -y
+          sudo apt-get install logstash -y
           sudo systemctl enable logstash
           sudo systemctl start logstash
 
           # Install Kibana
-          sudo apt install kibana -y
+          sudo apt-get install kibana -y
           sudo systemctl enable kibana
           sudo systemctl start kibana
+
+          # Configure Nginx as a reverse proxy for Kibana
+          sudo apt-get install nginx apache2-utils -y
+          sudo htpasswd -c /etc/nginx/htpasswd.users kibanaadmin
+          sudo rm /etc/nginx/sites-available/default
+          sudo touch /etc/nginx/sites-available/default
+          sudo tee -a /etc/nginx/sites-available/default > /dev/null <<EOT
+          server {
+              listen 80;
+
+              server_name $INSTANCE_IP;
+
+              auth_basic "Restricted Access";
+              auth_basic_user_file /etc/nginx/htpasswd.users;
+
+              location / {
+                  proxy_pass http://localhost:5601;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host \$host;
+                          proxy_cache_bypass \$http_upgrade;
+                      \}
+                  \}
+                  EOT
+                  sudo systemctl enable nginx
+                  sudo systemctl start nginx
+
+                  # Install and configure Filebeat (optional)
+                  curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.0-amd64.deb
+                  sudo dpkg -i filebeat-7.12.0-amd64.deb
+                  sudo systemctl enable filebeat
+                  sudo systemctl start filebeat
+
+                  # Additional configurations (refer to the article for details)
+                  # ...
+
+                  # Print instructions for accessing Kibana
+                  echo "ELK Stack has been successfully deployed!"
+                  echo "You can access Kibana at: http://$INSTANCE_IP"
 
 
 Outputs:
