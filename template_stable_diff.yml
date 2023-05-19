@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: A CloudFormation template to deploy the Stable Diffusion Web UI by Automatic1111 and Prometheus/Grafana
+
+Parameters:
+  Environment:
+    Type: String
+
+Conditions:
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+
+Resources:
+  MyEIP:
+    Type: AWS::EC2::EIP
+
+  MyEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt MyEIP.AllocationId
+      InstanceId: !Ref EC2Instance
+      
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: sd-webui-sg
+      GroupDescription: Security group for Stable Diffusion and Prometheus/Grafana EC2 instances
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 7860
+          ToPort: 7860
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+          
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !If
+        - IsDevEnvironment
+        - g4dn.xlarge
+        - t2.large
+      ImageId: !If
+        - IsDevEnvironment
+        - EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !If
+        - IsDevEnvironment
+        - g4dn.xlarge
+        - t2.large
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0fec2c2e2017f4e7b # AMI ID for 'dev' environment TYPO3 CMS v11.5.26a on Debian GNU/Linux v11.6 (Bullseye)
+        - ami-0a695f0d95cefc163  # AMI ID for 'prod' environment
+      KeyName: !If
+        - IsDevEnvironment
+        - sreuniversity  # Key name for 'dev' environment
+        - turnthepage   # Key name for 'prod' environment
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 300
+            VolumeType: gp2
+ # AMI ID for 'dev' environment TYPO3 CMS v11.5.26a on Debian GNU/Linux v11.6 (Bullseye)
+        - ami-0a695f0d95cefc163  # AMI ID for 'prod' environment
+      KeyName: !If
+        - IsDevEnvironment
+        - sreuniversity  # Key name for 'dev' environment
+        - turnthepage   # Key name for 'prod' environment
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 300
+            VolumeType: gp2
+
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['StableDiffusion-Prometheus-Grafana', !Ref Environment]]
+      SecurityGroups:
+        - Ref: SecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          
+          sudo apt update
+          sudo apt upgrade -y
+          sudo  apt-get install python3-venv -y
+          sudo apt install python3.10-venv -y
+          sudo apt install -y build-essential python3 python3-pip git
+          git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
+          cd stable-diffusion-webui
+          pip3 install -r requirements.txt
+          sudo apt install -y nvidia-cuda-toolkit
+  
+
+          sleep 8
+
+          # Install wget
+          sudo yum install wget -y
+
+          # Download prom_install and grafana_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+
+          # Make prom_install and grafana_install executable
+          chmod +x prom_install.sh
+          chmod +x grafana_install.sh
+
+          # Run prom_install
+          ./prom_install.sh
+
+          # Run grafana_install
+          ./grafana_install.sh
+  
+
+  

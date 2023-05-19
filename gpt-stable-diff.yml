@@ -1,0 +1,54 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploy Stable Diffusion Web UI with NVIDIA GPU drivers
+
+Parameters:
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.medium
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-xxxxxxxxxxxxx  # Specify the desired AMI ID for your preferred OS
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      KeyName: your_key_pair_name  # Provide the name of your EC2 key pair
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install -y build-essential python3 python3-pip git
+          git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
+          cd stable-diffusion-webui
+          pip3 install -r requirements.txt
+          sudo apt install -y nvidia-cuda-toolkit
+
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp2
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access and allow inbound HTTP traffic
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  InstancePublicIP:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp

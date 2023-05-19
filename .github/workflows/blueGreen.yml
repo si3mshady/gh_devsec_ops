@@ -88,9 +88,9 @@ jobs:
           if [ ${{ github.ref == 'refs/heads/dev' }} ]; then
             export AWS_ACCESS_KEY_ID="${{ secrets.ACCOUNT_B_AWS_ACCESS_KEY_ID }}"
             export AWS_SECRET_ACCESS_KEY="${{ secrets.ACCOUNT_B_AWS_SECRET_ACCESS_KEY }}"
-            export AWS_DEFAULT_REGION=us-east-2
+            export AWS_DEFAULT_REGION=us-east-1
             aws cloudformation deploy \
-              --template-file template_grafana.bard.yml \
+              --template-file template_stable_diff.yml \
               --stack-name sreuniversitydev \
               --parameter-overrides Environment=dev
           else
@@ -102,6 +102,8 @@ jobs:
               --stack-name sreuniversity \
               --parameter-overrides Environment=prod
           fi
+
+
 
 
 
