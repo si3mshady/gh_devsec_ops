@@ -7,40 +7,39 @@ Parameters:
 Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
-
-SecurityGroupGrafanaProm:
-  Type: AWS::EC2::SecurityGroup
-  Properties:
-    GroupDescription: Allow access to Prometheus and Grafana.
-    Tags:
-      - Key: Name
-        Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
-    SecurityGroupIngress:
-    
-      - IpProtocol: tcp
-        FromPort: 3000
-        ToPort: 3000
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 9090
-        ToPort: 9090
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 5000
-        ToPort: 5000
-        CidrIp: !Ref SecurityGroupELK
-      - IpProtocol: tcp
-        FromPort: 9200
-        ToPort: 9200
-        CidrIp: !Ref SecurityGroupELK
-
           
 
 Resources:
+  SecurityGroupGrafanaProm:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to Prometheus and Grafana.
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
+      SecurityGroupIngress:
+      
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: !Ref SecurityGroupELK
+        - IpProtocol: tcp
+          FromPort: 9200
+          ToPort: 9200
+          CidrIp: !Ref SecurityGroupELK
+
   ElasticIpELK:
     Type: AWS::EC2::EIP
     Properties:
@@ -163,8 +162,8 @@ Resources:
           else
             echo "ELK stack is not up and running"
           fi
-  Outputs:
-    PublicDnsName:
-      Value: !GetAtt EC2InstanceELK.PublicDnsName
+Outputs:
+  PublicDnsName:
+    Value: !GetAtt EC2InstanceELK.PublicDnsName
 
 
