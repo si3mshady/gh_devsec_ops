@@ -4,6 +4,9 @@ Parameters:
   Environment:
     Type: String
 
+  StackName:
+  Type: String
+
 Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
@@ -144,8 +147,11 @@ Resources:
           sudo systemctl start kibana
 
           # Configure Elastic IP for ELK instance
-          elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name <your-stack-name> --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicDnsName" --output text)
+          # Configure Elastic IP for ELK instance
+          elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name ${StackName} --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicDnsName" --output text)
           echo "ElasticIp: ${elasticIp}" | sudo tee -a /etc/elk/elk.conf
+
+       
 
           # Start Elasticsearch
           sudo systemctl start elasticsearch
