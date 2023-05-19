@@ -46,8 +46,8 @@ Resources:
 
   ElasticIpELK:
     Type: AWS::EC2::EIP
-    # Properties:
-    #   Domain: vpc
+    Properties:
+      Domain: vpc
 
   EC2InstancePrometheusGrafana:
     Type: AWS::EC2::Instance
