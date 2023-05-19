@@ -105,30 +105,30 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          Update the system
+          # Update the system
           sudo apt update
 
-          # Install Java Development Kit (JDK)
-          sudo apt install default-jdk -y
+          # Install Java
+          sudo apt install default-jre -y
 
-          # Download and install Elasticsearch
+          # Install Elasticsearch
           wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
           echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
           sudo apt update
           sudo apt install elasticsearch -y
-
-          # Configure Elasticsearch
-          sudo sed -i 's/#network.host: 0.0.0.0/network.host: 0.0.0.0/' /etc/elasticsearch/elasticsearch.yml
-
-          # Start and enable Elasticsearch service
-          sudo systemctl start elasticsearch
           sudo systemctl enable elasticsearch
+          sudo systemctl start elasticsearch
 
-          # Wait for Elasticsearch to start
-          sleep 10
+          # Install Logstash
+          sudo apt install logstash -y
+          sudo systemctl enable logstash
+          sudo systemctl start logstash
 
-          # Check Elasticsearch status
-          sudo systemctl status elasticsearch
+          # Install Kibana
+          sudo apt install kibana -y
+          sudo systemctl enable kibana
+          sudo systemctl start kibana
+
 
 Outputs:
   PublicDnsName:
