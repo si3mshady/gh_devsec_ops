@@ -135,3 +135,16 @@ Outputs:
     Value: !GetAtt ElasticIpELK.PublicIp
 
      
+# Save the script to a file (e.g., install_elk.sh), make it executable using the command chmod +x install_elk.sh, and then execute it with ./install_elk.sh.
+
+# This script performs the following steps:
+
+# Updates the system packages.
+# Installs the Java Runtime Environment (JRE).
+# Downloads and installs Elasticsearch.
+# Enables and starts the Elasticsearch service.
+# Installs Logstash.
+# Enables and starts the Logstash service.
+# Installs Kibana.
+# Enables and starts the Kibana service.
+# After running this script, the ELK stack should be installed and running on your Ubuntu system. You can access Kibana by visiting http://localhost:5601 in your web browser.
