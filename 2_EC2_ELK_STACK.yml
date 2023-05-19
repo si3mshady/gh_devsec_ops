@@ -105,67 +105,32 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          sudo yum update -y
-          sudo yum install -y awscli wget
+          #!/bin/bash
 
-          # Download elk_install
-          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/elk_install.sh
+# Update the system
+sudo apt update
 
-          # Make elk_install executable
-          chmod +x elk_install.sh
+# Install Java Development Kit (JDK)
+sudo apt install default-jdk -y
 
-          # Run elk_install
-          ./elk_install.sh
+# Download and install Elasticsearch
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
+sudo apt update
+sudo apt install elasticsearch -y
 
-          # Configure ELK to listen on port 5000 for TCP connections from Prometheus
-          echo "network.host: 0.0.0.0" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+# Configure Elasticsearch
+sudo sed -i 's/#network.host: 0.0.0.0/network.host: 0.0.0.0/' /etc/elasticsearch/elasticsearch.yml
 
-          # Configure Logstash to listen on port 5000 for TCP connections from Prometheus
-          echo "
-          input {
-            tcp {
-              port => 5000
-            }
-          }
-          filter {
-            grok {
-              match => {
-                \"message\" => \"%{COMMONAPACHELOG}\"
-              }
-            }
-          }
-          output {
-            elasticsearch {
-              hosts =>  [\"!GetAtt ElasticIpELK.PublicIp:9200\"]"
-            }
-          }
-          " | sudo tee -a /etc/logstash/logstash.conf
+# Start and enable Elasticsearch service
+sudo systemctl start elasticsearch
+sudo systemctl enable elasticsearch
 
-          # Configure Kibana to listen on port 5601
-          echo "elasticsearch.hosts: [\"!GetAtt ElasticIpELK.PublicIp:9200\"]" | sudo tee -a /etc/kibana/kibana.yml
-          # Start Kibana
-          sudo systemctl start kibana
+# Wait for Elasticsearch to start
+sleep 10
 
-          # # Configure Elastic IP for ELK instance
-          elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name !Ref "AWS::StackName" --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicIp" --output text)
-          echo "ElasticIp: $elasticIp" | sudo tee -a /etc/elk/elk.conf
-
-
-          # Start Elasticsearch
-          sudo systemctl start elasticsearch
-
-          # Start Logstash
-          sudo systemctl start logstash
-
-          # Wait for ELK stack to be up and running
-          sleep 60
-
-          # Check if ELK stack is up and running
-          if curl -sSf http://169.254.169.254/latest/meta-data/public-hostname:9200 >/dev/null; then
-            echo "ELK stack is up and running"
-          else
-            echo "ELK stack is not up and running"
-          fi
+# Check Elasticsearch status
+sudo systemctl status elasticsearch
 
 Outputs:
   PublicDnsName:
