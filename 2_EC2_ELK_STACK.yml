@@ -82,6 +82,7 @@ Resources:
           # Configure Prometheus to forward logs to ELK
           echo "elk_host:${ElasticIpELK.PublicIp}" >> /etc/prometheus/prometheus.yml
 
+
 #   EC2InstanceELK:
 #     Type: AWS::EC2::Instance
 #     Properties:
