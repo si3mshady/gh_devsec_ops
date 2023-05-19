@@ -85,15 +85,15 @@ jobs:
 
       - name: Set AWS Credentials and Deploy CloudFormation stack
         run: |
-          if [ ${{ github.ref == 'refs/heads/dev' }} ]; then
-            export AWS_ACCESS_KEY_ID="${{ secrets.ACCOUNT_B_AWS_ACCESS_KEY_ID }}"
-            export AWS_SECRET_ACCESS_KEY="${{ secrets.ACCOUNT_B_AWS_SECRET_ACCESS_KEY }}"
-            export AWS_DEFAULT_REGION=us-east-1
-            aws cloudformation deploy \
-              --template-file template_stable_diff.yml \
-              --stack-name sreuniversitydev \
-              --parameter-overrides Environment=dev
-          else
+          # if [ ${{ github.ref == 'refs/heads/dev' }} ]; then
+          #   export AWS_ACCESS_KEY_ID="${{ secrets.ACCOUNT_B_AWS_ACCESS_KEY_ID }}"
+          #   export AWS_SECRET_ACCESS_KEY="${{ secrets.ACCOUNT_B_AWS_SECRET_ACCESS_KEY }}"
+          #   export AWS_DEFAULT_REGION=us-east-1
+          #   aws cloudformation deploy \
+          #     --template-file template_stable_diff.yml \
+          #     --stack-name sreuniversitydev \
+          #     --parameter-overrides Environment=dev
+          # else
             export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
             export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
             export AWS_DEFAULT_REGION=us-east-1
@@ -101,7 +101,7 @@ jobs:
               --template-file 2_EC2_ELK_STACK.yml \
               --stack-name sreuniversityelk \
               --parameter-overrides Environment=prod
-          fi
+          # fi
 
 
 
