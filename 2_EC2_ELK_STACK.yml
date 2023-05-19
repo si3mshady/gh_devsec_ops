@@ -34,11 +34,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 5000
           ToPort: 5000
-          CidrIp: !Ref SecurityGroupELK
+          CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 9200
           ToPort: 9200
-          CidrIp: !Ref SecurityGroupELK
+          CidrIp: 0.0.0.0/0
 
   ElasticIpELK:
     Type: AWS::EC2::EIP
@@ -93,7 +93,7 @@ Resources:
       InstanceType: t2.large
       # KeyName: turnthepage
       SecurityGroupIds:
-        - !Ref SecurityGroupELK
+        - !Ref SecurityGroupGrafanaProm
       Tags:
         - Key: Name
           Value: !Join ['-', ['ELK-', !Ref Environment]]
