@@ -10,7 +10,6 @@ Parameters:
 Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
-
 Resources:
   SecurityGroupGrafanaProm:
     Type: AWS::EC2::SecurityGroup
@@ -20,7 +19,6 @@ Resources:
         - Key: Name
           Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
       SecurityGroupIngress:
-      
         - IpProtocol: tcp
           FromPort: 3000
           ToPort: 3000
@@ -82,7 +80,7 @@ Resources:
           ./grafana_install.sh
 
           # Configure Prometheus to forward logs to ELK
-          echo "elk_host:!GetAtt ${ElasticIpELK.PublicDnsName}" >> /etc/prometheus/prometheus.yml
+          echo "elk_host:${ElasticIpELK.PublicDnsName}" >> /etc/prometheus/prometheus.yml
 
   EC2InstanceELK:
     Type: AWS::EC2::Instance
@@ -90,8 +88,7 @@ Resources:
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-      InstanceType: t2.large
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment      InstanceType: t2.large
       # KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
@@ -145,12 +142,9 @@ Resources:
           sudo systemctl start kibana
 
           # Configure Elastic IP for ELK instance
-       
           elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name !Ref "AWS::StackName" --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicDnsName" --output text)
-
           echo "ElasticIp: ${elasticIp}" | sudo tee -a /etc/elk/elk.conf
 
-    
           # Start Elasticsearch
           sudo systemctl start elasticsearch
 
@@ -171,4 +165,4 @@ Outputs:
   PublicDnsName:
     Value: !GetAtt ElasticIpELK.PublicDnsName
 
-
+     
