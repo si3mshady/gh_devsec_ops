@@ -88,7 +88,8 @@ Resources:
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-        - ami-007855ac798b5175e  # AMI ID for 'prod' environment      InstanceType: t2.large
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+      InstanceType: t2.large
       # KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
@@ -130,13 +131,13 @@ Resources:
           }
           output {
             elasticsearch {
-              hosts => [\"localhost:9200\"]
+              hosts => [\"${ElasticIpELK}\:9200\"]
             }
           }
           " | sudo tee -a /etc/logstash/logstash.conf
 
           # Configure Kibana to listen on port 5601
-          echo "elasticsearch.hosts: [\"localhost:9200\"]" | sudo tee -a /etc/kibana/kibana.yml
+          echo "elasticsearch.hosts: [\"${ElasticIpELK}\:9200\"]" | sudo tee -a /etc/kibana/kibana.yml
 
           # Start Kibana
           sudo systemctl start kibana
