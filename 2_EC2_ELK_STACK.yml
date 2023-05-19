@@ -165,6 +165,6 @@ Resources:
 
 Outputs:
   PublicDnsName:
-    Value: !GetAtt ElasticIpELK.PublicDnsName
+    Value: !GetAtt ElasticIpELK.PublicIp
 
      
