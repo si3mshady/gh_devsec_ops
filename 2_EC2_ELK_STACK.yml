@@ -166,3 +166,5 @@ EC2InstanceELK:
 Outputs:
   PublicDnsName:
     Value: !GetAtt EC2InstanceELK.PublicDnsName
+
+
