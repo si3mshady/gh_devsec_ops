@@ -146,6 +146,7 @@ Resources:
           elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name !Ref "AWS::StackName" --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicIp" --output text)
           echo "ElasticIp: $elasticIp" | sudo tee -a /etc/elk/elk.conf
 
+          
           # Start Elasticsearch
           sudo systemctl start elasticsearch
 
