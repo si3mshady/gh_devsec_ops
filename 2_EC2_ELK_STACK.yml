@@ -45,42 +45,42 @@ Resources:
     # Properties:
     #   Domain: vpc
 
-#   EC2InstancePrometheusGrafana:
-#     Type: AWS::EC2::Instance
-#     Properties:
-#       ImageId: !If
-#         - IsDevEnvironment
-#         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-#         - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-#       InstanceType: t2.large
-#       # KeyName: turnthepage
-#       SecurityGroupIds:
-#         - !Ref SecurityGroupGrafanaProm
-#       Tags:
-#         - Key: Name
-#           Value: !Join ['-', ['PrometheusAndGrafana-bluegreen-', !Ref Environment]]
-#       UserData:
-#         Fn::Base64: !Sub |
-#           #!/bin/bash
+  EC2InstancePrometheusGrafana:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+      InstanceType: t2.large
+      # KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupGrafanaProm
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['PrometheusAndGrafana-bluegreen-', !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
 
-#           # Install wget
-#           sudo yum install wget -y
+          # Install wget
+          sudo yum install wget -y
 
-#           # Download prom_install and grafana_install
-#           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
-#           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+          # Download prom_install and grafana_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
 
-#           # Make prom_install and grafana_install executable
-#           chmod +x prom_install.sh
-#           chmod +x grafana_install.sh
+          # Make prom_install and grafana_install executable
+          chmod +x prom_install.sh
+          chmod +x grafana_install.sh
 
-#           # Run prom_install
-#           ./prom_install.sh
-#           # Run grafana_install
-#           ./grafana_install.sh
+          # Run prom_install
+          ./prom_install.sh
+          # Run grafana_install
+          ./grafana_install.sh
 
-#           # Configure Prometheus to forward logs to ELK
-#           echo "elk_host:${ElasticIpELK.PublicDnsName}" >> /etc/prometheus/prometheus.yml
+          # Configure Prometheus to forward logs to ELK
+          echo "elk_host:${ElasticIpELK.PublicDnsName}" >> /etc/prometheus/prometheus.yml
 
 #   EC2InstanceELK:
 #     Type: AWS::EC2::Instance
