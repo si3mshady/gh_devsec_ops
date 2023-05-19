@@ -64,7 +64,7 @@ jobs:
 
       - name: Run security scan
         run: |
-          if grep -q "your_regex_pattern" template_grafana.yml; then
+          if grep -q "your_regex_pattern"  2_EC2_ELK_STACK.yml; then
             echo "Regex pattern found in template_grafana.yml. Proceeding with deployment."
             exit 1
           else
