@@ -150,8 +150,7 @@ Resources:
 
           echo "ElasticIp: ${elasticIp}" | sudo tee -a /etc/elk/elk.conf
 
-       
-
+    
           # Start Elasticsearch
           sudo systemctl start elasticsearch
 
