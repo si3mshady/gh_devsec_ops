@@ -10,7 +10,6 @@ Parameters:
 Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
-          
 
 Resources:
   SecurityGroupGrafanaProm:
@@ -79,7 +78,6 @@ Resources:
 
           # Run prom_install
           ./prom_install.sh
-
           # Run grafana_install
           ./grafana_install.sh
 
