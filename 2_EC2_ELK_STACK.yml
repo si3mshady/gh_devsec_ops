@@ -82,90 +82,89 @@ Resources:
           # Configure Prometheus to forward logs to ELK
           echo "elk_host:${ElasticIpELK.PublicIp}" >> /etc/prometheus/prometheus.yml
 
+#new 
+  EC2InstanceELK:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+      InstanceType: t2.large
+      # KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupGrafanaProm
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['ELK-', !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
 
-#   EC2InstanceELK:
-#     Type: AWS::EC2::Instance
-#     Properties:
-#       ImageId: !If
-#         - IsDevEnvironment
-#         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-#         - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-#       InstanceType: t2.large
-#       # KeyName: turnthepage
-#       SecurityGroupIds:
-#         - !Ref SecurityGroupGrafanaProm
-#       Tags:
-#         - Key: Name
-#           Value: !Join ['-', ['ELK-', !Ref Environment]]
-#       UserData:
-#         Fn::Base64: !Sub |
-#           #!/bin/bash
+          sudo yum update -y
+          sudo yum install -y awscli wget
 
-#           sudo yum update -y
-#           sudo yum install -y awscli wget
+          # Download elk_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/elk_install.sh
 
-#           # Download elk_install
-#           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/elk_install.sh
+          # Make elk_install executable
+          chmod +x elk_install.sh
 
-#           # Make elk_install executable
-#           chmod +x elk_install.sh
+          # Run elk_install
+          ./elk_install.sh
 
-#           # Run elk_install
-#           ./elk_install.sh
+          # Configure ELK to listen on port 5000 for TCP connections from Prometheus
+          echo "network.host: 0.0.0.0" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
 
-#           # Configure ELK to listen on port 5000 for TCP connections from Prometheus
-#           echo "network.host: 0.0.0.0" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+          # Configure Logstash to listen on port 5000 for TCP connections from Prometheus
+          echo "
+          input {
+            tcp {
+              port => 5000
+            }
+          }
+          filter {
+            grok {
+              match => {
+                \"message\" => \"%{COMMONAPACHELOG}\"
+              }
+            }
+          }
+          output {
+            elasticsearch {
+              hosts => [\"${ElasticIpELK}\:9200\"]
+            }
+          }
+          " | sudo tee -a /etc/logstash/logstash.conf
 
-#           # Configure Logstash to listen on port 5000 for TCP connections from Prometheus
-#           echo "
-#           input {
-#             tcp {
-#               port => 5000
-#             }
-#           }
-#           filter {
-#             grok {
-#               match => {
-#                 \"message\" => \"%{COMMONAPACHELOG}\"
-#               }
-#             }
-#           }
-#           output {
-#             elasticsearch {
-#               hosts => [\"${ElasticIpELK}\:9200\"]
-#             }
-#           }
-#           " | sudo tee -a /etc/logstash/logstash.conf
-
-#           # Configure Kibana to listen on port 5601
-#           echo "elasticsearch.hosts: [\"${ElasticIpELK}\:9200\"]" | sudo tee -a /etc/kibana/kibana.yml
-
-#           # Start Kibana
-#           sudo systemctl start kibana
+          # Configure Kibana to listen on port 5601
+          echo "elasticsearch.hosts: [\"!GetAtt ElasticIpELK.PublicIp:9200\"]" | sudo tee -a /etc/kibana/kibana.yml
+          # Start Kibana
+          sudo systemctl start kibana
 
 
-#           # # Configure Elastic IP for ELK instance
-#           # elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name !Ref "AWS::StackName" --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicDnsName" --output text)
-#           # echo "ElasticIp: ${elasticIp}" | sudo tee -a /etc/elk/elk.conf
+          # # Configure Elastic IP for ELK instance
+          # elasticIp=$(aws ec2 describe-addresses --allocation-ids $(aws cloudformation describe-stacks --stack-name !Ref "AWS::StackName" --query "Stacks[0].Outputs[?OutputKey=='ElasticIpELK'].OutputValue" --output text) --query "Addresses[0].PublicIp" --output text)
+          # echo "ElasticIp: ${elasticIp}" | sudo tee -a /etc/elk/elk.conf
 
-#           # Start Elasticsearch
-#           sudo systemctl start elasticsearch
+          # Start Elasticsearch
+          sudo systemctl start elasticsearch
 
-#           # Start Logstash
-#           sudo systemctl start logstash
+          # Start Logstash
+          sudo systemctl start logstash
 
-#           # Wait for ELK stack to be up and running
-#           sleep 60
+          # Wait for ELK stack to be up and running
+          sleep 60
 
-#           # Check if ELK stack is up and running
-#           if curl -sSf http://169.254.169.254/latest/meta-data/public-hostname:9200 >/dev/null; then
-#             echo "ELK stack is up and running"
-#           else
-#             echo "ELK stack is not up and running"
-#           fi
+          # Check if ELK stack is up and running
+          if curl -sSf http://169.254.169.254/latest/meta-data/public-hostname:9200 >/dev/null; then
+            echo "ELK stack is up and running"
+          else
+            echo "ELK stack is not up and running"
+          fi
 
-# Outputs:
-#   PublicDnsName:
-#     Value: !GetAtt ElasticIpELK.PublicDnsName
+Outputs:
+  PublicDnsName:
+    Value: !GetAtt ElasticIpELK.PublicDnsName
 
      
