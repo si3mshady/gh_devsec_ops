@@ -108,6 +108,19 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
+          # Update system packages
+          sudo apt-get update
+
+          # Install Git
+          sudo apt-get install -y git
+
+          # Install Docker
+          sudo apt-get install -y docker.io
+
+          # Install Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
           # Update the package index
           sudo apt-get update
 
