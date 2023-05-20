@@ -56,7 +56,7 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-      InstanceType: m4.large
+      InstanceType: t2.large
       KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
@@ -94,7 +94,7 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
-      InstanceType: t2.large
+      InstanceType: m4.large
       KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
