@@ -93,7 +93,7 @@ Resources:
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+        - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
       InstanceType: t2.large
       KeyName: turnthepage
       SecurityGroupIds:
