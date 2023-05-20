@@ -92,7 +92,7 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
-      InstanceType: t2.large
+      InstanceType: m5.large 
       KeyName: turnthepage
       BlockDeviceMappings:
       - DeviceName: /dev/sda1
@@ -108,98 +108,79 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          # Update system packages
-          sudo apt-get update
-
-          # Install Git
-          sudo apt-get install -y git
-
-          # Install Docker
-          sudo apt-get install -y docker.io
-
           # Install Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-          # Update the package index
-          sudo apt-get update
-
-          # Install dependencies to allow apt to use a repository over HTTPS
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-
-          # Add Docker's official GPG key
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-          # Add the Docker repository
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-          # Update the package index again
-          sudo apt-get update
-
           # Install Docker
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-          # Start the Docker service
+          # Start Docker service
           sudo systemctl start docker
-
-          # Enable Docker to start on system boot
           sudo systemctl enable docker
 
-          # Check if Docker is running
-          if sudo systemctl is-active --quiet docker; then
-            echo "Docker is running."
-          else
-            echo "Docker failed to start."
-          fi
+          # Create a directory for the Docker Compose file
+          mkdir my-elk-stack
+          cd my-elk-stack
 
-          # Install Git
-          sudo apt-get install -y git
+          # Create the Docker Compose file
+          echo "version: '3.7'
 
-          # Clone the repository with the Docker Compose file
-          git clone https://github.com/your/repository.git
-          cd repository
-
-          # Create a shell script with the Docker Compose file
-          cat <<EOF >docker-compose.yml
-          $(cat <<'DOCKER_COMPOSE_FILE'
-          version: '3.8'
           services:
             elasticsearch:
-              image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+              image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
               container_name: elasticsearch
               environment:
+                - node.name=elk
                 - discovery.type=single-node
+                - bootstrap.memory_lock=true
+                - ES_JAVA_OPTS=-Xmx1g
               ports:
                 - 9200:9200
                 - 9300:9300
-              volumes:
-                - esdata:/usr/share/elasticsearch/data
 
             logstash:
-              image: docker.elastic.co/logstash/logstash:7.15.0
+              image: docker.elastic.co/logstash/logstash:8.7.1
               container_name: logstash
-              volumes:
-                - ./logstash-config:/usr/share/logstash/pipeline
+              environment:
+                - LS_JAVA_OPTS=-Xmx1g
               ports:
-                - 5044:5044
+                - 5000:5000
+              volumes:
+                - ./logstash/conf:/etc/logstash/conf.d
+                - ./logstash/pipeline:/usr/share/logstash/pipeline
 
             kibana:
-              image: docker.elastic.co/kibana/kibana:7.15.0
+              image: docker.elastic.co/kibana/kibana:8.7.1
               container_name: kibana
+              environment:
+                - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
               ports:
-                - 5601:5601
-              depends_on:
-                - elasticsearch
+                - 5601:5601" > docker-compose.yml
 
-          volumes:
-            esdata:
-              driver: local
-          DOCKER_COMPOSE_FILE
-          )
-          EOF
+          # Create the Logstash configuration file
+          echo "input {
+            tcp {
+              port => 5000
+              codec => json
+            }
+          }
 
-          # Run Docker Compose
-          sudo docker-compose up
+          output {
+            elasticsearch {
+              hosts => ['elasticsearch:9200']
+              index => 'logs-%{+YYYY.MM.dd}'
+            }
+          }" > logstash/conf/logstash.conf
+
+          # Start the ELK stack using Docker Compose
+          sudo docker-compose up -d
+
 
 Outputs:
   PublicDnsName:
