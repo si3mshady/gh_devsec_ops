@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Type: String
+
+  StackName:
+    Type: String
+
+Conditions:
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+
+Resources:
+  SecurityGroupGrafanaProm:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to Prometheus and Grafana.
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['SecurityGroupGrafanaProm', !Ref Environment]]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5601
+          ToPort: 5601
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9200
+          ToPort: 9200
+          CidrIp: 0.0.0.0/0
+
+  ElasticIpELK:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  EC2InstancePrometheusGrafana:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+      InstanceType: t2.large
+      KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupGrafanaProm
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['PrometheusAndGrafana-bluegreen-', !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Install wget
+          sudo yum install wget -y
+          # Download prom_install and grafana_install
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+
+          # Make prom_install and grafana_install executable
+          chmod +x prom_install.sh
+          chmod +x grafana_install.sh
+
+          # Run prom_install
+          ./prom_install.sh
+          # Run grafana_install
+          ./grafana_install.sh
+
+          # Configure Prometheus to forward logs to ELK
+          echo "elk_host:${ElasticIpELK.PublicIp}" >> /etc/prometheus/prometheus.yml
+
+#new 
+  EC2InstanceELK:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !If
+        - IsDevEnvironment
+        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+        - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
+      InstanceType: m4.large
+      KeyName: turnthepage
+      SecurityGroupIds:
+        - !Ref SecurityGroupGrafanaProm
+      Tags:
+        - Key: Name
+          Value: !Join ['-', ['ELK-', !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+
+          # Install netstat
+          sudo apt install net-tools
+
+          # Get the EC2 instance's public IP address
+          INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+          # Install Java Development Kit (JDK)
+          sudo apt-get update
+          sudo apt-get install default-jdk -y
+
+          # Download Elasticsearch
+          wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+          echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+          sudo apt-get update
+          sudo apt-get install elasticsearch -y
+
+          # Configure Elasticsearch
+          sudo sed -i '/^#network.host/s/^#//' /etc/elasticsearch/elasticsearch.yml
+          sudo sed -i '/^#http.port/s/^#//' /etc/elasticsearch/elasticsearch.yml
+          sudo sed -i "s/network.host: .*/network.host: \"localhost\"/" /etc/elasticsearch/elasticsearch.yml
+          sudo sed -i "s/http.port: .*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
+          sudo sed -i "s/#cluster.initial_master_nodes: .*/cluster.initial_master_nodes: [\"$INSTANCE_IP\"]/" /etc/elasticsearch/elasticsearch.yml
+
+          # Start Elasticsearch service
+          # sudo service elasticsearch start
+
+          # Download Logstash
+          wget https://artifacts.elastic.co/downloads/logstash/logstash-8.7.1-linux-x86_64.tar.gz
+
+          # Install Logstash
+          sudo apt-get install logstash -y
+          # sudo systemctl enable logstash
+          # sudo systemctl start logstash
+
+          # Create Logstash configuration file for Apache
+          sudo tee /etc/logstash/conf.d/apache-01.conf > /dev/null <<EOT
+          input {
+            file {
+              path => "/home/ubuntu/apache-daily-access.log"
+              start_position => "beginning"
+              sincedb_path => "/dev/null"
+            }
+          }
+
+          filter {
+            grok {
+              match => { "message" => "%{COMBINEDAPACHELOG}" }
+            }
+            date {
+              match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+            }
+            geoip {
+              source => "clientip"
+            }
+          }
+
+          output {
+            elasticsearch {
+              hosts => ["localhost:9200"]
+            }
+          }
+          EOT
+
+          # Download Kibana
+          wget https://artifacts.elastic.co/downloads/kibana/kibana-8.7.1-linux-x86_64.tar.gz
+
+          # Install Kibana
+          sudo apt-get install kibana -y
+
+          # Configure Kibana
+          sudo sed -i '/^#server.port/s/^#//' /etc/kibana/kibana.yml
+          sudo sed -i '/^#server.host/s/^#//' /etc/kibana/kibana.yml
+          sudo sed -i '/^#elasticsearch.hosts/s/^#//' /etc/kibana/kibana.yml
+          sudo sed -i "s/server.port: .*/server.port: 5601/" /etc/kibana/kibana.yml
+          sudo sed -i "s/server.host: .*/server.host: \"localhost\"/" /etc/kibana/kibana.yml
+          sudo sed -i "s/#elasticsearch.hosts: .*/elasticsearch.hosts: [\"http:\/\/localhost:9200\"]/" /etc/kibana/kibana.yml
+
+          # Start Kibana service
+          sudo service kibana start
+
+          # Configure Nginx as a reverse proxy for Kibana
+          sudo apt-get install nginx apache2-utils -y
+          sudo htpasswd -c /etc/nginx/htpasswd.users kibanaadmin
+          sudo rm /etc/nginx/sites-available/default
+          sudo touch /etc/nginx/sites-available/default
+          sudo tee -a /etc/nginx/sites-available/default > /dev/null <<EOT
+          server {
+              listen 80;
+
+              server_name $INSTANCE_IP;
+
+              auth_basic "Restricted Access";
+              auth_basic_user_file /etc/nginx/htpasswd.users;
+
+              location / {
+                  proxy_pass http://localhost:5601;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host \$host;
+                  proxy_cache_bypass \$http_upgrade;
+              }
+          }
+          EOT
+
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
+
+          # Install and configure Filebeat (optional)
+          curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.0-amd64.deb
+          sudo dpkg -i filebeat-7.12.0-amd64.deb
+
+          # Additional configurations (refer to the article for details)
+          # ...
+
+          # Print instructions for accessing Kibana
+          echo "ELK Stack has been successfully deployed!"
+          echo "You can access Kibana at: http://$INSTANCE_IP"
+
+        
+
+
+
+Outputs:
+  PublicDnsName:
+    Value: !GetAtt ElasticIpELK.PublicIp
+
+     
+# Save the script to a file (e.g., install_elk.sh), make it executable using the command chmod +x install_elk.sh, and then execute it with ./install_elk.sh.
+
+# This script performs the following steps:
+
+# Updates the system packages.
+# Installs the Java Runtime Environment (JRE).
+# Downloads and installs Elasticsearch.
+# Enables and starts the Elasticsearch service.
+# Installs Logstash.
+# Enables and starts the Logstash service.
+# Installs Kibana.
+# Enables and starts the Kibana service.
+# After running this script, the ELK stack should be installed and running on your Ubuntu system. You can access Kibana by visiting http://localhost:5601 in your web browser.

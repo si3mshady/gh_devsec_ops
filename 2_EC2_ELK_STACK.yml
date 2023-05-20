@@ -66,10 +66,8 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-
           # Install wget
           sudo yum install wget -y
-
           # Download prom_install and grafana_install
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
@@ -105,126 +103,46 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          # Install netstat
-          sudo apt install net-tools
-
-          # Get the EC2 instance's public IP address
-          INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
-
-          # Install Java Development Kit (JDK)
-          sudo apt-get update
-          sudo apt-get install default-jdk -y
-
           # Download Elasticsearch
-          wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-          echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
-          sudo apt-get update
-          sudo apt-get install elasticsearch -y
-
-          # Configure Elasticsearch
-          sudo sed -i '/^#network.host/s/^#//' /etc/elasticsearch/elasticsearch.yml
-          sudo sed -i '/^#http.port/s/^#//' /etc/elasticsearch/elasticsearch.yml
-          sudo sed -i "s/network.host: .*/network.host: \"localhost\"/" /etc/elasticsearch/elasticsearch.yml
-          sudo sed -i "s/http.port: .*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
-          sudo sed -i "s/#cluster.initial_master_nodes: .*/cluster.initial_master_nodes: [\"$INSTANCE_IP\"]/" /etc/elasticsearch/elasticsearch.yml
-
-          # Start Elasticsearch service
-          sudo service elasticsearch start
+          wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.7.1-linux-x86_64.tar.gz
 
           # Download Logstash
           wget https://artifacts.elastic.co/downloads/logstash/logstash-8.7.1-linux-x86_64.tar.gz
 
-          # Install Logstash
-          sudo apt-get install logstash -y
-          sudo systemctl enable logstash
-          sudo systemctl start logstash
-
-          # Create Logstash configuration file for Apache
-          sudo tee /etc/logstash/conf.d/apache-01.conf > /dev/null <<EOT
-          input {
-            file {
-              path => "/home/ubuntu/apache-daily-access.log"
-              start_position => "beginning"
-              sincedb_path => "/dev/null"
-            }
-          }
-
-          filter {
-            grok {
-              match => { "message" => "%{COMBINEDAPACHELOG}" }
-            }
-            date {
-              match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
-            }
-            geoip {
-              source => "clientip"
-            }
-          }
-
-          output {
-            elasticsearch {
-              hosts => ["localhost:9200"]
-            }
-          }
-          EOT
-
           # Download Kibana
           wget https://artifacts.elastic.co/downloads/kibana/kibana-8.7.1-linux-x86_64.tar.gz
 
-          # Install Kibana
-          sudo apt-get install kibana -y
+          # Untar the files
+          tar -xzf elasticsearch-8.7.1-linux-x86_64.tar.gz
+          tar -xzf logstash-8.7.1-linux-x86_64.tar.gz
+          tar -xzf kibana-8.7.1-linux-x86_64.tar.gz
 
-          # Configure Kibana
-          sudo sed -i '/^#server.port/s/^#//' /etc/kibana/kibana.yml
-          sudo sed -i '/^#server.host/s/^#//' /etc/kibana/kibana.yml
-          sudo sed -i '/^#elasticsearch.hosts/s/^#//' /etc/kibana/kibana.yml
-          sudo sed -i "s/server.port: .*/server.port: 5601/" /etc/kibana/kibana.yml
-          sudo sed -i "s/server.host: .*/server.host: \"localhost\"/" /etc/kibana/kibana.yml
-          sudo sed -i "s/#elasticsearch.hosts: .*/elasticsearch.hosts: [\"http:\/\/localhost:9200\"]/" /etc/kibana/kibana.yml
+          # Move the files to their respective directories
+          sudo mv elasticsearch-8.7.1 /opt/elasticsearch
+          sudo mv logstash-8.7.1 /opt/logstash
+          sudo mv kibana-8.7.1 /opt/kibana
 
-          # Start Kibana service
-          sudo service kibana start
+          # Create a symbolic link for Elasticsearch
+          sudo ln -s /opt/elasticsearch /usr/local/bin/elasticsearch
 
-          # Configure Nginx as a reverse proxy for Kibana
-          sudo apt-get install nginx apache2-utils -y
-          sudo htpasswd -c /etc/nginx/htpasswd.users kibanaadmin
-          sudo rm /etc/nginx/sites-available/default
-          sudo touch /etc/nginx/sites-available/default
-          sudo tee -a /etc/nginx/sites-available/default > /dev/null <<EOT
-          server {
-              listen 80;
+          # Create a symbolic link for Logstash
+          sudo ln -s /opt/logstash /usr/local/bin/logstash
 
-              server_name $INSTANCE_IP;
+          # Create a symbolic link for Kibana
+          sudo ln -s /opt/kibana /usr/local/bin/kibana
 
-              auth_basic "Restricted Access";
-              auth_basic_user_file /etc/nginx/htpasswd.users;
+          # # Start Elasticsearch
+          # sudo service elasticsearch start
 
-              location / {
-                  proxy_pass http://localhost:5601;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade \$http_upgrade;
-                  proxy_set_header Connection 'upgrade';
-                  proxy_set_header Host \$host;
-                  proxy_cache_bypass \$http_upgrade;
-              }
-          }
-          EOT
+          # # Start Logstash
+          # sudo service logstash start
 
-          sudo systemctl enable nginx
-          sudo systemctl start nginx
+          # # Start Kibana
+          # sudo service kibana start
 
-          # Install and configure Filebeat (optional)
-          curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.12.0-amd64.deb
-          sudo dpkg -i filebeat-7.12.0-amd64.deb
+                  
 
-          # Additional configurations (refer to the article for details)
-          # ...
-
-          # Print instructions for accessing Kibana
-          echo "ELK Stack has been successfully deployed!"
-          echo "You can access Kibana at: http://$INSTANCE_IP"
-
-        
+       
 
 
 
