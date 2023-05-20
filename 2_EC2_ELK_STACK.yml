@@ -103,48 +103,85 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          # Download Elasticsearch
-          wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.7.1-linux-x86_64.tar.gz
+          # Update the package index
+          sudo apt-get update
 
-          # Download Logstash
-          wget https://artifacts.elastic.co/downloads/logstash/logstash-8.7.1-linux-x86_64.tar.gz
+          # Install dependencies to allow apt to use a repository over HTTPS
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
-          # Download Kibana
-          wget https://artifacts.elastic.co/downloads/kibana/kibana-8.7.1-linux-x86_64.tar.gz
+          # Add Docker's official GPG key
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-          # Untar the files
-          tar -xzf elasticsearch-8.7.1-linux-x86_64.tar.gz
-          tar -xzf logstash-8.7.1-linux-x86_64.tar.gz
-          tar -xzf kibana-8.7.1-linux-x86_64.tar.gz
+          # Add the Docker repository
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-          # Move the files to their respective directories
-          sudo mv elasticsearch-8.7.1 /opt/elasticsearch
-          sudo mv logstash-8.7.1 /opt/logstash
-          sudo mv kibana-8.7.1 /opt/kibana
+          # Update the package index again
+          sudo apt-get update
 
-          # Create a symbolic link for Elasticsearch
-          sudo ln -s /opt/elasticsearch /usr/local/bin/elasticsearch
+          # Install Docker
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-          # Create a symbolic link for Logstash
-          sudo ln -s /opt/logstash /usr/local/bin/logstash
+          # Start the Docker service
+          sudo systemctl start docker
 
-          # Create a symbolic link for Kibana
-          sudo ln -s /opt/kibana /usr/local/bin/kibana
+          # Enable Docker to start on system boot
+          sudo systemctl enable docker
 
-          # # Start Elasticsearch
-          # sudo service elasticsearch start
+          # Check if Docker is running
+          if sudo systemctl is-active --quiet docker; then
+            echo "Docker is running."
+          else
+            echo "Docker failed to start."
+          fi
 
-          # # Start Logstash
-          # sudo service logstash start
+          # Install Git
+          sudo apt-get install -y git
 
-          # # Start Kibana
-          # sudo service kibana start
+          # Clone the repository with the Docker Compose file
+          git clone https://github.com/your/repository.git
+          cd repository
 
-                  
+          # Create a shell script with the Docker Compose file
+          cat <<EOF >docker-compose.yml
+          $(cat <<'DOCKER_COMPOSE_FILE'
+          version: '3.8'
+          services:
+            elasticsearch:
+              image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+              container_name: elasticsearch
+              environment:
+                - discovery.type=single-node
+              ports:
+                - 9200:9200
+                - 9300:9300
+              volumes:
+                - esdata:/usr/share/elasticsearch/data
 
-       
+            logstash:
+              image: docker.elastic.co/logstash/logstash:7.15.0
+              container_name: logstash
+              volumes:
+                - ./logstash-config:/usr/share/logstash/pipeline
+              ports:
+                - 5044:5044
 
+            kibana:
+              image: docker.elastic.co/kibana/kibana:7.15.0
+              container_name: kibana
+              ports:
+                - 5601:5601
+              depends_on:
+                - elasticsearch
 
+          volumes:
+            esdata:
+              driver: local
+          DOCKER_COMPOSE_FILE
+          )
+          EOF
+
+          # Run Docker Compose
+          sudo docker-compose up
 
 Outputs:
   PublicDnsName:
