@@ -105,22 +105,19 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
-          #install netstat
-
+          # Install netstat
           sudo apt install net-tools
 
           # Get the EC2 instance's public IP address
-          INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+          INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
           # Install Java Development Kit (JDK)
-
           sudo apt-get update
           sudo apt-get install default-jdk -y
 
-          # Install Elasticsearch
-          sudo apt-get install apt-transport-https -y
+          # Download Elasticsearch
           wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-          echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list
+          echo "deb https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
           sudo apt-get update
           sudo apt-get install elasticsearch -y
 
@@ -133,6 +130,9 @@ Resources:
 
           # Start Elasticsearch service
           sudo service elasticsearch start
+
+          # Download Logstash
+          wget https://artifacts.elastic.co/downloads/logstash/logstash-8.7.1-linux-x86_64.tar.gz
 
           # Install Logstash
           sudo apt-get install logstash -y
@@ -167,6 +167,9 @@ Resources:
             }
           }
           EOT
+
+          # Download Kibana
+          wget https://artifacts.elastic.co/downloads/kibana/kibana-8.7.1-linux-x86_64.tar.gz
 
           # Install Kibana
           sudo apt-get install kibana -y
@@ -206,6 +209,7 @@ Resources:
               }
           }
           EOT
+
           sudo systemctl enable nginx
           sudo systemctl start nginx
 
@@ -219,6 +223,8 @@ Resources:
           # Print instructions for accessing Kibana
           echo "ELK Stack has been successfully deployed!"
           echo "You can access Kibana at: http://$INSTANCE_IP"
+
+        
 
 
 
