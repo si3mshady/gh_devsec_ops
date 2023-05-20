@@ -92,8 +92,13 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
-      InstanceType: m4.large
+      InstanceType: t2.large
       KeyName: turnthepage
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeSize: 100
+          VolumeType: gp2
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
       Tags:
