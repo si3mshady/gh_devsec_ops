@@ -56,7 +56,7 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-      InstanceType: t2.large
+      InstanceType: m4.large
       KeyName: turnthepage
       SecurityGroupIds:
         - !Ref SecurityGroupGrafanaProm
@@ -105,10 +105,15 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
+          #install netstat
+
+          sudo apt install net-tools
+
           # Get the EC2 instance's public IP address
           INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
           # Install Java Development Kit (JDK)
+
           sudo apt-get update
           sudo apt-get install default-jdk -y
 
