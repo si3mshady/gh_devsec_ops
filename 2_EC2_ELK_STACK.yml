@@ -170,10 +170,14 @@ Resources:
 
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
 
+          sudo apt update
+          sudo apt install python3 python3-pip
+
+
  
           
-          pip3  install Faker && python3 log_generator.py
-          #creates log_generator.log
+          # pip3  install Faker && python3 log_generator.py
+          # #creates log_generator.log
 
 
 
@@ -253,10 +257,6 @@ Resources:
             elk_network:
               driver: bridge
           " > docker-compose.yml
-
-        
-
-
 
           # Start the ELK stack using Docker Compose
           sudo docker-compose up 
