@@ -238,10 +238,11 @@ Resources:
               driver: bridge' > docker-compose.yml
 
           # Start the ELK stack using Docker Compose
-          sudo docker-compose up 
-          sudo docker exec -it elasticsearch sed -i 's/true/false/g' /usr/share/elasticsearch/config/elasticsearch.yml 
-          sudo docker restart  logstash 
-          sudo docker restart  kibana 
+          sudo docker-compose up && \
+          sudo docker exec -it elasticsearch sed -i 's/true/false/g' /usr/share/elasticsearch/config/elasticsearch.yml && \
+          sudo docker restart elasticsearch && \
+          sudo docker restart  logstash && \
+          sudo docker restart  kibana
 
 
 Outputs:
