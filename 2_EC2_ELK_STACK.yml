@@ -185,7 +185,7 @@ Resources:
                 - es_data:/usr/share/elasticsearch/data
               environment:
                 - discovery.type=single-node
-                - ES_JAVA_OPTS=Xmx1g
+                - ES_JAVA_OPTS=-Xmx1g
               ports:
                 - 9200:9200
                 - 9300:9300
@@ -199,7 +199,8 @@ Resources:
               container_name: logstash
               restart: always
               environment:
-                - LS_JAVA_OPTS=Xmx1g
+                - LS_JAVA_OPTS=-Xmx1g
+                - LS_OPTS=--path.settings=/usr/share/logstash/config
               ports:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
