@@ -216,7 +216,6 @@ Resources:
               networks:
                 - elk_network
 
-
             kibana:
               image: docker.elastic.co/kibana/kibana:8.7.1
               depends_on:
