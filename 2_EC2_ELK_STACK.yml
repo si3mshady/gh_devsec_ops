@@ -172,7 +172,7 @@ Resources:
               hosts => ["elasticsearch:9200"]
             }
           }' > ./logstash.conf
-          
+
 
           # Create the Docker Compose file
           echo 'version: "3.7"
@@ -211,6 +211,7 @@ Resources:
               networks:
                 - elk_network
 
+                
             kibana:
               image: docker.elastic.co/kibana/kibana:8.7.1
               depends_on:
