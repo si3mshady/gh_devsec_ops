@@ -7,7 +7,7 @@ fake = Faker()
 
 # Configure logging
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger("log_generator")
+logger = logging.getLogger("log_generator.log")
 
 # Generate and log fake data
 while True:
