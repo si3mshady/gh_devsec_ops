@@ -172,6 +172,7 @@ Resources:
               hosts => ["elasticsearch:9200"]
             }
           }' > ./logstash.conf
+          
 
           # Create the Docker Compose file
           echo 'version: "3.7"
