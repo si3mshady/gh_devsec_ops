@@ -152,7 +152,7 @@ Resources:
               ports:
                 - 5000:5000
               volumes:
-                - ./logstash:/etc/logstash/conf.d
+                - ./logstash.conf:/etc/logstash/conf.d
                
 
             kibana:
