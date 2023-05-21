@@ -175,10 +175,6 @@ Resources:
           #   }
           # }' > ./logstash.conf
 
-
-          # # sleep 3
-
-
           # Create the Docker Compose file
           echo 'version: "3.7"
 
@@ -242,6 +238,7 @@ Resources:
           sudo docker restart elasticsearch && \
           sudo docker restart  logstash && \
           sudo docker restart  kibana
+
 
 
 Outputs:
