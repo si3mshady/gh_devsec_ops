@@ -182,7 +182,7 @@ Resources:
           #this is being created on host
           echo "input {
             file {
-              path => "log_generator.log"
+              path => "/logstash_dir/logs.log"
             }
           }
 
@@ -228,6 +228,7 @@ Resources:
               command: logstash -f /logstash_dir/logstash.conf
               volumes:
                 - ./logstash.conf:/logstash_dir/logstash.conf
+                -./logs.log:/logstash_dir/logs.log
               networks:
                 - elk_network
 
@@ -264,6 +265,10 @@ Resources:
 Outputs:
   PublicDnsName:
     Value: !GetAtt ElasticIpELK.PublicIp
+
+
+
+docker exec -it elasticsearch sed -i 's/old_text/new_text/g' /path/to/file
 
     #  sudo less /var/log/cloud-init-output.log
 # Save the script to a file (e.g., install_elk.sh), make it executable using the command chmod +x install_elk.sh, and then execute it with ./install_elk.sh.

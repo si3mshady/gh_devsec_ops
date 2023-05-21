@@ -6,7 +6,7 @@ from faker import Faker
 fake = Faker()
 
 # Configure logging
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(filename='logs.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("log_generator.log")
 
 # Generate and log fake data
@@ -22,4 +22,4 @@ while True:
     }
 
     logger.info(log_data)
-    time.sleep(3)
+    time.sleep(1)
