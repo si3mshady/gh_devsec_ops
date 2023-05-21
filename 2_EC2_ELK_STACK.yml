@@ -136,16 +136,14 @@ Resources:
           Value: !Join ['-', ['ELK-', !Ref Environment]]
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash
+         #!/bin/bash
 
-
-          #install python3 pip3
+          # Install Python3 and pip3
           sudo apt update
-          sudo apt install python3 python3-pip
+          sudo apt install python3 python3-pip -y
 
-          #install Faker
-          pip3  install Faker
-
+          # Install Faker
+          pip3 install Faker
 
           # Install Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -159,7 +157,6 @@ Resources:
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-
           # Start Docker service
           sudo systemctl start docker
           sudo systemctl enable docker
@@ -171,20 +168,10 @@ Resources:
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
 
           sudo apt update
-          sudo apt install python3 python3-pip
-
-
- 
-          
-          # pip3  install Faker && python3 log_generator.py
-          # #creates log_generator.log
-
-
-
+          sudo apt install python3 python3-pip -y
 
           # Create the Logstash configuration file
-          #this is being created on host
-          echo "input {
+          echo 'input {
             file {
               path => "/logstash_dir/logs.log"
             }
@@ -192,13 +179,12 @@ Resources:
 
           output {
             elasticsearch {
-              hosts => ['elasticsearch:9200']
-              
+              hosts => ["elasticsearch:9200"]
             }
-          }" > ./logstash.conf
+          }' > ./logstash.conf
 
           # Create the Docker Compose file
-          echo "version: '3.7'
+          echo 'version: "3.7"
 
           services:
             elasticsearch:
@@ -208,10 +194,8 @@ Resources:
               volumes:
                 - es_data:/usr/share/elasticsearch/data
               environment:
-               
                 - discovery.type=single-node
-               
-                - ES_JAVA_OPTS= "-Xmx256m -Xms256m"
+                - ES_JAVA_OPTS="-Xmx256m -Xms256m"
               ports:
                 - 9200:9200
                 - 9300:9300
@@ -225,14 +209,13 @@ Resources:
               container_name: logstash
               restart: always
               environment:
-                - LS_JAVA_OPTS="-Xmx256m -Xms256m"    
-
+                - LS_JAVA_OPTS="-Xmx256m -Xms256m"
               ports:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
               volumes:
-                - ./logstash.conf:/logstash_dir/logstash.conf #this conf file ->
-                -./logs.log:/logstash_dir/logs.log #references this logfile
+                - ./logstash.conf:/logstash_dir/logstash.conf
+                - ./logs.log:/logstash_dir/logs.log
               networks:
                 - elk_network
 
@@ -244,7 +227,6 @@ Resources:
               restart: always
               environment:
                 - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-              
               ports:
                 - 5601:5601
               networks:
@@ -256,10 +238,11 @@ Resources:
           networks:
             elk_network:
               driver: bridge
-          " > docker-compose.yml
+          ' > docker-compose.yml
 
           # Start the ELK stack using Docker Compose
-          sudo docker-compose up 
+          sudo docker-compose up
+
 
 
 Outputs:
