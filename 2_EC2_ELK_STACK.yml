@@ -185,6 +185,7 @@ Resources:
               restart: always
               volumes:
                 - es_data:/usr/share/elasticsearch/data
+                - ./mount/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
               environment:
                 - discovery.type=single-node
                 - ES_JAVA_OPTS=-Xmx1g
@@ -207,8 +208,8 @@ Resources:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
               volumes:
-                - ./mount:/logstash_dir/logstash.conf
-                - ./mount/:/logstash_dir/logs.log
+                - ./mount/logstash.conf:/logstash_dir/logstash.conf
+                - ./mount/logs.log:/logstash_dir/logs.log
               networks:
                 - elk_network
 
@@ -230,14 +231,15 @@ Resources:
 
           networks:
             elk_network:
-              driver: bridge' > docker-compose.yml
+              driver: bridge
+          ' > docker-compose.yml
 
-          # Start the ELK stack using Docker Compose
-          sudo docker-compose up && \
-          sudo docker exec -it elasticsearch sed -i 's/true/false/g' /usr/share/elasticsearch/config/elasticsearch.yml && \
-          sudo docker restart elasticsearch && \
-          sudo docker restart  logstash && \
-          sudo docker restart  kibana
+          # # Start the ELK stack using Docker Compose
+          # sudo docker-compose up && \
+          # sudo docker exec -it elasticsearch sed -i 's/true/false/g' /usr/share/elasticsearch/config/elasticsearch.yml && \
+          # sudo docker restart elasticsearch && \
+          # sudo docker restart  logstash && \
+          # sudo docker restart  kibana
 
 
 

@@ -29,11 +29,10 @@ services:
       - 9600:9600
     command: logstash -f /logstash_dir/logstash.conf
     volumes:
-      - ./logstash.conf:/logstash_dir/logstash.conf
-      - ./logs.log:/logstash_dir/logs.log
+      - ./mount/logstash.conf:/logstash_dir/logstash.conf
+      - ./mount/logs.log:/logstash_dir/logs.log
     networks:
       - elk_network
-
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.7.1
@@ -42,7 +41,7 @@ services:
     container_name: kibana
     restart: always
     environment:
-      - ELASTICSEARCH_HOSTS=elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
       - 5601:5601
     networks:
