@@ -204,10 +204,10 @@ Resources:
               volumes:
                 - es_data:/usr/share/elasticsearch/data
               environment:
-                - node.name=elk
+               
                 - discovery.type=single-node
-                - bootstrap.memory_lock=true
-                - ES_JAVA_OPTS=-Xmx1g
+               
+                - ES_JAVA_OPTS= "-Xmx256m -Xms256m"
               ports:
                 - 9200:9200
                 - 9300:9300
@@ -221,7 +221,8 @@ Resources:
               container_name: logstash
               restart: always
               environment:
-                - LS_JAVA_OPTS=-Xmx1g
+                - LS_JAVA_OPTS="-Xmx256m -Xms256m"    
+
               ports:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
@@ -238,6 +239,7 @@ Resources:
               restart: always
               environment:
                 - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+              
               ports:
                 - 5601:5601
               networks:
