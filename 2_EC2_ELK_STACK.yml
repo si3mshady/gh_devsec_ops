@@ -138,6 +138,15 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
+
+          #install python3 pip3
+          sudo apt update
+          sudo apt install python3 python3-pip
+
+          #install Faker
+          pip3  install Faker
+
+
           # Install Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
@@ -150,6 +159,7 @@ Resources:
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
+
           # Start Docker service
           sudo systemctl start docker
           sudo systemctl enable docker
@@ -159,13 +169,10 @@ Resources:
           cd my-elk-stack
 
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
-          
-          sudo yum install python3
-          python3 --version > python3.txt
-          pip3 --version > pip3.txt
-          pip3  install Faker
 
-          python3 log_generator.py
+ 
+          
+          pip3  install Faker && python3 log_generator.py
           #creates log_generator.log
 
 
@@ -195,7 +202,7 @@ Resources:
               container_name: elasticsearch
               restart: always
               volumes:
-                - es_data:/usr/share/elasticsearch/data 
+                - es_data:/usr/share/elasticsearch/data
               environment:
                 - node.name=elk
                 - discovery.type=single-node
@@ -219,8 +226,7 @@ Resources:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
               volumes:
-                # - ./logstash.conf:/etc/logstash/conf.d
-                - ./logstash.conf:/logstash_dir
+                - ./logstash.conf:/logstash_dir/logstash.conf
               networks:
                 - elk_network
 
@@ -236,13 +242,14 @@ Resources:
                 - 5601:5601
               networks:
                 - elk_network
-          
+
           volumes:
-              es_data {}
+            es_data:
 
           networks:
             elk_network:
-              driver: bridge" > docker-compose.yml
+              driver: bridge
+          " > docker-compose.yml
 
         
 
