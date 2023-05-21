@@ -113,7 +113,6 @@ Resources:
   #         python3 log_generator.py
 
 
-
 #new 
   EC2InstanceELK:
     Type: AWS::EC2::Instance
