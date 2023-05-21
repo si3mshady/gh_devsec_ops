@@ -211,8 +211,8 @@ Resources:
                 - 9600:9600
               command: logstash -f /logstash_dir/logstash.conf
               volumes:
-                - mount/:/logstash_dir/logstash.conf
-                - mount/:/logstash_dir/logs.log
+                - ./mount:/logstash_dir/logstash.conf
+                - ./mount/:/logstash_dir/logs.log
               networks:
                 - elk_network
 
