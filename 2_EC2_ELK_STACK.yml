@@ -117,8 +117,9 @@ Resources:
 #new 
   EC2InstanceELK:
     Type: AWS::EC2::Instance
-    Region: us-west-1
+    
     Properties:
+      Region: us-west-1
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
