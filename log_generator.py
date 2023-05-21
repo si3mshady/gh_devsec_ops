@@ -17,7 +17,9 @@ while True:
         "source": fake.ipv4_public(),
         "user_agent": fake.user_agent(),
         "status_code": fake.random_int(min=200, max=500),
+        "social_network": "linkedIn",
+        "developer": "Elliott Lamar Arnold"
     }
 
     logger.info(log_data)
-    time.sleep(20)
+    time.sleep(3)
