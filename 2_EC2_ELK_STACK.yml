@@ -93,7 +93,7 @@ Resources:
           filebeat.inputs:
           - type: log
             paths:
-              - ./log_generator.log  # Replace with the actual path to the log file
+              - ./logs.log  # Replace with the actual path to the log file
 
           output.elasticsearch:
             hosts: ["${ElasticIpELK.PublicIp}:9200"]  # Replace with the Elasticsearch host and port
