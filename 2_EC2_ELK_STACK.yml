@@ -49,68 +49,68 @@ Resources:
     Properties:
       Domain: vpc
 
-  EC2InstancePrometheusGrafana:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: !If
-        - IsDevEnvironment
-        - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
-        - ami-007855ac798b5175e  # AMI ID for 'prod' environment
-      InstanceType: t2.large
-      KeyName: turnthepage
-      SecurityGroupIds:
-        - !Ref SecurityGroupGrafanaProm
-      Tags:
-        - Key: Name
-          Value: !Join ['-', ['PrometheusAndGrafana-bluegreen-', !Ref Environment]]
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          # Install wget and Filebeat
-          sudo yum install wget -y
-          wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.15.2-amd64.rpm
-          sudo rpm -vi filebeat-7.15.2-amd64.rpm
+  # EC2InstancePrometheusGrafana:
+  #   Type: AWS::EC2::Instance
+  #   Properties:
+  #     ImageId: !If
+  #       - IsDevEnvironment
+  #       - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
+  #       - ami-007855ac798b5175e  # AMI ID for 'prod' environment
+  #     InstanceType: t2.large
+  #     KeyName: turnthepage
+  #     SecurityGroupIds:
+  #       - !Ref SecurityGroupGrafanaProm
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Join ['-', ['PrometheusAndGrafana-bluegreen-', !Ref Environment]]
+  #     UserData:
+  #       Fn::Base64: !Sub |
+  #         #!/bin/bash
+  #         # Install wget and Filebeat
+  #         sudo yum install wget -y
+  #         wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.15.2-amd64.rpm
+  #         sudo rpm -vi filebeat-7.15.2-amd64.rpm
 
 
 
 
-          # Download prom_install, grafana_install, and log_generator.py
-          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
-          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
-          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
+  #         # Download prom_install, grafana_install, and log_generator.py
+  #         wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
+  #         wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+  #         wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
 
-          # Make prom_install and grafana_install executable
-          chmod +x prom_install.sh
-          chmod +x grafana_install.sh
+  #         # Make prom_install and grafana_install executable
+  #         chmod +x prom_install.sh
+  #         chmod +x grafana_install.sh
 
-          # Run prom_install
-          ./prom_install.sh
-          # Run grafana_install
-          ./grafana_install.sh
+  #         # Run prom_install
+  #         ./prom_install.sh
+  #         # Run grafana_install
+  #         ./grafana_install.sh
 
-          # Configure Filebeat
-          sudo tee /etc/filebeat/filebeat.yml > /dev/null <<EOF
-          filebeat.inputs:
-          - type: log
-            paths:
-              - ./logs.log  # Replace with the actual path to the log file
+  #         # Configure Filebeat
+  #         sudo tee /etc/filebeat/filebeat.yml > /dev/null <<EOF
+  #         filebeat.inputs:
+  #         - type: log
+  #           paths:
+  #             - ./logs.log  # Replace with the actual path to the log file
 
-          output.elasticsearch:
-            hosts: ["${ElasticIpELK.PublicIp}:9200"]  # Replace with the Elasticsearch host and port
+  #         output.elasticsearch:
+  #           hosts: ["${ElasticIpELK.PublicIp}:9200"]  # Replace with the Elasticsearch host and port
 
-          EOF
+  #         EOF
 
-          # Start and enable Filebeat service
-          sudo systemctl start filebeat
-          sudo systemctl enable filebeat
+  #         # Start and enable Filebeat service
+  #         sudo systemctl start filebeat
+  #         sudo systemctl enable filebeat
 
-          # Run the log generator script
-          sudo yum install python3
-          python3 --version > python3.txt
-          pip3 --version > pip3.txt
-          pip3 install -r requirements.txt
+  #         # Run the log generator script
+  #         sudo yum install python3
+  #         python3 --version > python3.txt
+  #         pip3 --version > pip3.txt
+  #         pip3 install -r requirements.txt
 
-          python3 log_generator.py
+  #         python3 log_generator.py
 
 
 
@@ -122,7 +122,7 @@ Resources:
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
         - ami-053b0d53c279acc90 # AMI ID for 'prod' environment
-      InstanceType: m5.large 
+      InstanceType: m5.xlarge 
       KeyName: turnthepage
       BlockDeviceMappings:
       - DeviceName: /dev/sda1
