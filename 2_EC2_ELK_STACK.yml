@@ -119,7 +119,7 @@ Resources:
     Type: AWS::EC2::Instance
     
     Properties:
-      Region: us-west-1
+      # Region: us-west-1
       ImageId: !If
         - IsDevEnvironment
         - ami-0a695f0d95cefc163  # AMI ID for 'dev' environment
