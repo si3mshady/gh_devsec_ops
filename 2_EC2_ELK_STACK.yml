@@ -117,6 +117,7 @@ Resources:
 #new 
   EC2InstanceELK:
     Type: AWS::EC2::Instance
+    Region: us-west-1
     Properties:
       ImageId: !If
         - IsDevEnvironment
