@@ -268,7 +268,7 @@ Outputs:
 
 
 
-docker exec -it elasticsearch sed -i 's/old_text/new_text/g' /path/to/file
+# docker exec -it elasticsearch sed -i 's/old_text/new_text/g' /path/to/file
 
     #  sudo less /var/log/cloud-init-output.log
 # Save the script to a file (e.g., install_elk.sh), make it executable using the command chmod +x install_elk.sh, and then execute it with ./install_elk.sh.
