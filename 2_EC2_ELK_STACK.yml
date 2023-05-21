@@ -66,11 +66,18 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          # Install wget
+          # Install wget and Filebeat
           sudo yum install wget -y
-          # Download prom_install and grafana_install
+          wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.15.2-amd64.rpm
+          sudo rpm -vi filebeat-7.15.2-amd64.rpm
+
+
+
+
+          # Download prom_install, grafana_install, and log_generator.py
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/prom_install.sh
           wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/grafana_install.sh
+          wget https://raw.githubusercontent.com/si3mshady/gh_devsec_ops/main/log_generator.py
 
           # Make prom_install and grafana_install executable
           chmod +x prom_install.sh
@@ -81,8 +88,31 @@ Resources:
           # Run grafana_install
           ./grafana_install.sh
 
-          # Configure Prometheus to forward logs to ELK
-          echo "elk_host:${ElasticIpELK.PublicIp}" >> /etc/prometheus/prometheus.yml
+          # Configure Filebeat
+          sudo tee /etc/filebeat/filebeat.yml > /dev/null <<EOF
+          filebeat.inputs:
+          - type: log
+            paths:
+              - ./log_generator.log  # Replace with the actual path to the log file
+
+          output.elasticsearch:
+            hosts: ["${ElasticIpELK.PublicIp}:9200"]  # Replace with the Elasticsearch host and port
+
+          EOF
+
+          # Start and enable Filebeat service
+          sudo systemctl start filebeat
+          sudo systemctl enable filebeat
+
+          # Run the log generator script
+          sudo yum install python3
+          python3 --version > python3.txt
+          pip3 --version > pip3.txt
+          pip3 install -r requirements.txt
+
+          python3 log_generator.py
+
+
 
 #new 
   EC2InstanceELK:
