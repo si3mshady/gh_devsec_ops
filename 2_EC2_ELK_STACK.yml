@@ -138,7 +138,6 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-
           # Install Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
@@ -241,7 +240,6 @@ Resources:
           # sudo docker restart elasticsearch && \
           # sudo docker restart  logstash && \
           # sudo docker restart  kibana
-
 
 
 Outputs:
