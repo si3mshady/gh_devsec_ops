@@ -185,7 +185,7 @@ Resources:
               restart: always
               volumes:
                 - es_data:/usr/share/elasticsearch/data
-                - ./mount/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+                # - ./mount/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
               environment:
                 - discovery.type=single-node
                 - ES_JAVA_OPTS=-Xmx1g
