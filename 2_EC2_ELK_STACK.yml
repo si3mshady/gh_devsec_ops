@@ -135,24 +135,24 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join ['-', ['ELK-', !Ref Environment]]
-      # UserData:
-      #   Fn::Base64: !Sub |
-      #     #!/bin/bash
-      #     # Install Docker Compose
-      #     sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-      #     sudo chmod +x /usr/local/bin/docker-compose
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Install Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
 
-      #     # Install Docker
-      #     sudo apt-get update
-      #     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-      #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-      #     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-      #     sudo apt-get update
-      #     sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          # Install Docker
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-      #     # Start Docker service
-      #     sudo systemctl start docker
-      #     sudo systemctl enable docker
+          # Start Docker service
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
       #     # Create a directory for the Docker Compose file
       #     mkdir my-elk-stack
