@@ -1,13 +1,12 @@
 version: "3.7"
 
 services:
-
   filebeat:
 
     depends_on:
       - elasticsearch
     image: docker.elastic.co/beats/filebeat:7.17.10
-    command: filebeat -e -c /usr/share/filebeat/filebeat.yml
+    command: filebeat -e -c /usr/share/filebeat/filebeat.yml #reads configuration file
     # command: "setup -E setup.kibana.host=kibana:5601 -E output.elasticsearch.hosts=['elasticsearch:9200']"
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
