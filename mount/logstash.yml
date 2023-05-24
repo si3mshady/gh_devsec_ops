@@ -1,0 +1,35 @@
+# logstash.yml
+
+# Set the number of workers to the number of available CPU cores
+# You can adjust this based on your system's resources
+pipeline.workers: auto
+
+# Set the maximum number of events Logstash can have queued at any time
+# You can adjust this based on your system's resources and event volume
+pipeline.batch.size: 125
+
+# Set the maximum number of milliseconds to wait for events before flushing
+# You can adjust this based on your system's resources and desired latency
+pipeline.batch.delay: 50
+
+# Set the path to the Logstash modules
+path.modules: []
+
+# Set the path to the Logstash data directory
+path.data: /var/lib/logstash
+
+# Set the path to the Logstash logs directory
+path.logs: /var/log/logstash
+
+# Enable or disable Logstash monitoring API
+# Adjust the HTTP settings as needed for your environment
+xpack.monitoring.enabled: false
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# Configure the Logstash pipeline settings
+pipeline:
+  batch:
+    size: 125
+    delay: 50
+
+# Additional Logstash settings can be added below if needed
